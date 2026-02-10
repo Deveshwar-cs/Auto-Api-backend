@@ -12,6 +12,7 @@ const projectSchema = new mongoose.Schema(
     },
     mongoUri: String,
     jwtSecret: String,
+    port: Number,
     apiPrefix: {type: String, default: "/api"},
     enableAuth: {type: Boolean, default: true},
     enableCors: {type: Boolean, default: false},

@@ -11,8 +11,10 @@ import {createEnvFile} from "../utils/createEnvFile.js";
 import {createPackageJsonFile} from "../utils/createPackageJsonFile.js";
 import {createDbFile} from "../utils/createDbFile.js";
 import {createErrorMiddlewareFile} from "../utils/createErrorMiddleware.js";
-import fs from "fs";
+import {deleteAuthFiles} from "../utils/deleteAuthFiles.js";
+import fs, {rmSync} from "fs";
 
+// Create Project
 export const createProject = asyncHandler(async (req, res) => {
   const {
     projectName,
@@ -24,7 +26,7 @@ export const createProject = asyncHandler(async (req, res) => {
     enableCors,
     enableLogger,
   } = req.body;
-
+  console.log(port);
   if (!projectName) {
     return res.status(400).json({message: "Project name is required"});
   }
@@ -70,6 +72,52 @@ export const getProjects = asyncHandler(async (req, res) => {
   res.status(200).json(projects);
 });
 
+// Update project:
+export const updateProject = asyncHandler(async (req, res) => {
+  const {id} = req.params;
+  const oldProject = await Project.findById(id);
+
+  const updatedProject = await Project.findOneAndUpdate(
+    {_id: id, userId: req.user._id},
+    {$set: req.body},
+    {new: true},
+  );
+
+  if (!updatedProject) {
+    return res
+      .status(404)
+      .json({message: "Project not found or not authorized"});
+  }
+
+  // 🔁 Regenerate files using UPDATED data from DB
+  const projectPath = path.join("generated", id.toString());
+
+  if (oldProject.enableAuth && !updatedProject.enableAuth) {
+    deleteAuthFiles(projectPath);
+  }
+
+  createAppFile(projectPath, updatedProject);
+  createServerFile(projectPath);
+  createDbFile(projectPath);
+  createErrorMiddlewareFile(projectPath);
+
+  if (!oldProject.enableAuth && updatedProject.enableAuth) {
+    createUserModelFile(projectPath);
+    createAuthControllerFile(projectPath);
+    createAuthRoutesFile(projectPath);
+    createAuthMiddlewareFile(projectPath);
+  }
+
+  createEnvFile(projectPath, updatedProject);
+  createPackageJsonFile(projectPath);
+
+  res.status(200).json({
+    message: "Project updated successfully",
+    project: updatedProject,
+  });
+});
+
+// delete Project:
 export const deleteProject = asyncHandler(async (req, res) => {
   const {id} = req.params;
 
