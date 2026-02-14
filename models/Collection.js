@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, {Mongoose} from "mongoose";
 
 const fieldSchema = new mongoose.Schema({
   name: {
@@ -6,9 +6,11 @@ const fieldSchema = new mongoose.Schema({
     required: true,
   },
 
+  // Main field type
   type: {
     type: String,
     required: true,
+    enum: ["String", "Number", "Boolean", "Date", "ObjectId", "Array"],
   },
 
   required: {
@@ -16,14 +18,23 @@ const fieldSchema = new mongoose.Schema({
     default: false,
   },
 
+  // ✅ For enum on String
   enum: {
-    type: [String], // for enum values
+    type: [mongoose.Schema.Types.Mixed],
   },
 
+  // ✅ For ObjectId reference
   ref: {
-    type: String, // for ObjectId reference model name
+    type: String,
   },
 
+  // ✅ NEW: for Array type (what it contains)
+  itemsType: {
+    type: String,
+    enum: ["String", "Number", "Boolean", "Date", "ObjectId"],
+  },
+
+  // default value
   default: {
     type: mongoose.Schema.Types.Mixed,
   },
