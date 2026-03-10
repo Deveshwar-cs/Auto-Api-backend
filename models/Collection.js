@@ -53,6 +53,16 @@ const collectionSchema = new mongoose.Schema(
       required: true,
     },
 
+    isGenerated: {
+      type: Boolean,
+      default: false,
+    },
+
+    lastGeneratedAt: {
+      type: Date,
+      default: null,
+    },
+
     fields: [fieldSchema],
   },
   {timestamps: true},

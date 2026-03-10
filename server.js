@@ -7,6 +7,7 @@ import authRoutes from "./routes/authRoutes.js";
 import projectRoutes from "./routes/projectRoutes.js";
 import collectionRoutes from "./routes/collectionRoutes.js";
 import generatedFilesRoutes from "./routes/generatedFiles.routes.js";
+import dashboardRoutes from "./routes/dashboard.routes.js";
 
 dotenv.config();
 const app = express();
@@ -26,6 +27,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/collection", collectionRoutes);
 app.use("/api/generated-files", generatedFilesRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 app.use(errorHandler);
 

@@ -26,7 +26,6 @@ export const createProject = asyncHandler(async (req, res) => {
     enableCors,
     enableLogger,
   } = req.body;
-  console.log(port);
   if (!projectName) {
     return res.status(400).json({message: "Project name is required"});
   }

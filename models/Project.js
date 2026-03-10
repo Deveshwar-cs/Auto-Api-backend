@@ -10,6 +10,10 @@ const projectSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    collectionsCount: {
+      type: Number,
+      default: 0,
+    },
     mongoUri: String,
     jwtSecret: String,
     port: Number,
