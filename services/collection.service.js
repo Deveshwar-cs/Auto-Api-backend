@@ -159,3 +159,39 @@ export const generateFilesService = async (projectId, collId, userId) => {
   await collection.save();
   return true;
 };
+
+export const generateAllCollectionsService = async (projectId, userId) => {
+  if (!mongoose.Types.ObjectId.isValid(projectId)) {
+    throw new Error("Invalid projectId");
+  }
+
+  const project = await Project.findById(projectId);
+
+  if (!project) {
+    throw new Error("Project not found");
+  }
+
+  if (project.userId.toString() !== userId.toString()) {
+    throw new Error("Not authorized");
+  }
+
+  const collections = await Collection.find({projectId});
+
+  if (!collections.length) {
+    throw new Error("No collections found for this project");
+  }
+
+  for (const collection of collections) {
+    generateCollectionFiles(
+      projectId,
+      collection.collectionName,
+      collection.fields,
+    );
+
+    collection.isGenerated = true;
+    collection.lastGeneratedAt = new Date();
+    await collection.save();
+  }
+
+  return true;
+};

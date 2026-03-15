@@ -1,4 +1,5 @@
 import {asyncHandler} from "../middleware/asyncHandler.js";
+import Notification from "../models/notificationModel.js";
 import Collection from "../models/Collection.js";
 import {
   createCollectionService,
@@ -6,6 +7,7 @@ import {
   updateCollectionService,
   getCollectionsService,
   generateFilesService,
+  generateAllCollectionsService,
 } from "../services/collection.service.js";
 
 export const generateFiles = asyncHandler(async (req, res) => {
@@ -36,6 +38,17 @@ export const createCollection = asyncHandler(async (req, res) => {
     fields,
   );
 
+  const notification = await Notification.create({
+    user: req.user._id,
+    message: `Collection "${collection.collectionName}" created`,
+    read: false,
+  });
+
+  const io = req.app.get("io");
+  if (io) {
+    io.to(notification.user.toString()).emit("newNotification", notification);
+  }
+
   res.status(201).json({
     success: true,
     data: collection,
@@ -45,8 +58,18 @@ export const createCollection = asyncHandler(async (req, res) => {
 export const deleteCollection = asyncHandler(async (req, res) => {
   const {projectId, collId} = req.params;
 
+  const currentCollection = await Collection.findById(collId);
   await deleteCollectionService(projectId, collId, req.user._id);
 
+  const notification = await Notification.create({
+    user: req.user._id,
+    message: `Collection "${currentCollection.collectionName}" deleted`,
+    read: false,
+  });
+  const io = req.app.get("io");
+  if (io) {
+    io.to(notification.user.toString()).emit("newNotification", notification);
+  }
   res.status(200).json({
     success: true,
     message: "Collection deleted successfully",
@@ -63,9 +86,20 @@ export const updateCollection = asyncHandler(async (req, res) => {
     collectionName,
     fields,
   );
+  const collection = await Collection.findById(collId);
 
   updatedCollection.isGenerated = false;
   await updatedCollection.save();
+
+  const notification = await Notification.create({
+    user: req.user._id,
+    message: `Collection "${collection.collectionName}" updated`,
+    read: false,
+  });
+  const io = req.app.get("io");
+  if (io) {
+    io.to(notification.user.toString()).emit("newNotification", notification);
+  }
 
   res.status(200).json({
     success: true,
@@ -81,5 +115,16 @@ export const getCollections = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     data: collections,
+  });
+});
+
+export const generateAllCollections = asyncHandler(async (req, res) => {
+  const {projectId} = req.params;
+
+  await generateAllCollectionsService(projectId, req.user.id);
+
+  res.json({
+    success: true,
+    message: "All collections generated successfully",
   });
 });

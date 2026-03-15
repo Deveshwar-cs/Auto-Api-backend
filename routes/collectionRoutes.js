@@ -5,6 +5,7 @@ import {
   getCollections,
   updateCollection,
   generateFiles,
+  generateAllCollections,
 } from "../controllers/collection.js";
 import {protect} from "../middleware/authMiddleware.js";
 
@@ -15,5 +16,6 @@ router.get("/getCollection/:projectId", protect, getCollections);
 router.put("/updateCollection/:projectId/:collId", protect, updateCollection);
 router.delete("/:projectId/delete/:collId", protect, deleteCollection);
 router.post("/:projectId/:collId/generate", protect, generateFiles);
+router.post("/:projectId/generate-all", protect, generateAllCollections);
 
 export default router;

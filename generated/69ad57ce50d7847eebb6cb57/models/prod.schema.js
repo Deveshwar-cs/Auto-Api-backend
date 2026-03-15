@@ -11,6 +11,12 @@ const prodSchema = new mongoose.Schema(
  enum: [],
  },
 
+ price: {
+    type: Number,
+ required: true,
+ enum: [],
+ },
+
 },
 { timestamps: true }
 );

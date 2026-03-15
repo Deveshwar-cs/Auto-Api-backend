@@ -1,6 +1,10 @@
 import {asyncHandler} from "../middleware/asyncHandler.js";
 import Project from "../models/Project.js";
+import Notification from "../models/notificationModel.js";
+
 import path from "path";
+import fs from "fs";
+
 import {createAppFile} from "../utils/createAppFile.js";
 import {createServerFile} from "../utils/createServerFile.js";
 import {createUserModelFile} from "../utils/createUserModelFile.js";
@@ -12,9 +16,11 @@ import {createPackageJsonFile} from "../utils/createPackageJsonFile.js";
 import {createDbFile} from "../utils/createDbFile.js";
 import {createErrorMiddlewareFile} from "../utils/createErrorMiddleware.js";
 import {deleteAuthFiles} from "../utils/deleteAuthFiles.js";
-import fs, {rmSync} from "fs";
 
-// Create Project
+/* =========================
+   CREATE PROJECT
+========================= */
+
 export const createProject = asyncHandler(async (req, res) => {
   const {
     projectName,
@@ -26,9 +32,11 @@ export const createProject = asyncHandler(async (req, res) => {
     enableCors,
     enableLogger,
   } = req.body;
+
   if (!projectName) {
     return res.status(400).json({message: "Project name is required"});
   }
+
   const project = await Project.create({
     userId: req.user._id,
     projectName,
@@ -41,16 +49,13 @@ export const createProject = asyncHandler(async (req, res) => {
     enableLogger,
   });
 
-  // Generate base backend structure for this project
   const projectPath = path.join("generated", project._id.toString());
 
-  // Base files
   createAppFile(projectPath, project);
   createServerFile(projectPath);
   createDbFile(projectPath);
   createErrorMiddlewareFile(projectPath);
 
-  // Optional Auth
   if (enableAuth) {
     createUserModelFile(projectPath);
     createAuthControllerFile(projectPath);
@@ -58,22 +63,41 @@ export const createProject = asyncHandler(async (req, res) => {
     createAuthMiddlewareFile(projectPath);
   }
 
-  // Env + package
   createEnvFile(projectPath, project);
   createPackageJsonFile(projectPath);
+
+  /* Create Notification */
+  const notification = await Notification.create({
+    user: req.user._id,
+    message: `Project "${project.projectName}" created`,
+    read: false,
+  });
+
+  /* Emit socket event */
+  const io = req.app.get("io");
+  if (io) {
+    io.to(notification.user.toString()).emit("newNotification", notification);
+  }
 
   res.status(201).json(project);
 });
 
+/* =========================
+   GET PROJECTS
+========================= */
+
 export const getProjects = asyncHandler(async (req, res) => {
   const projects = await Project.find({userId: req.user._id});
-
   res.status(200).json(projects);
 });
 
-// Update project:
+/* =========================
+   UPDATE PROJECT
+========================= */
+
 export const updateProject = asyncHandler(async (req, res) => {
   const {id} = req.params;
+
   const oldProject = await Project.findById(id);
 
   const updatedProject = await Project.findOneAndUpdate(
@@ -88,7 +112,6 @@ export const updateProject = asyncHandler(async (req, res) => {
       .json({message: "Project not found or not authorized"});
   }
 
-  // 🔁 Regenerate files using UPDATED data from DB
   const projectPath = path.join("generated", id.toString());
 
   if (oldProject.enableAuth && !updatedProject.enableAuth) {
@@ -110,35 +133,59 @@ export const updateProject = asyncHandler(async (req, res) => {
   createEnvFile(projectPath, updatedProject);
   createPackageJsonFile(projectPath);
 
+  /* Create Notification */
+  const notification = await Notification.create({
+    user: req.user._id,
+    message: `Project "${updatedProject.projectName}" updated`,
+    read: false,
+  });
+  const io = req.app.get("io");
+  if (io) {
+    io.to(notification.user.toString()).emit("newNotification", notification);
+  }
+
   res.status(200).json({
     message: "Project updated successfully",
     project: updatedProject,
   });
 });
 
-// delete Project:
+/* =========================
+   DELETE PROJECT
+========================= */
+
 export const deleteProject = asyncHandler(async (req, res) => {
   const {id} = req.params;
 
-  // 1. Find project
   const project = await Project.findById(id);
 
   if (!project) {
     return res.status(400).json({message: "Project not found"});
   }
 
-  // 2. Check ownership
   if (project.userId.toString() !== req.user._id.toString()) {
     return res.status(403).json({message: "Not authorized"});
   }
 
-  // Delete generated folder
   const projectPath = path.join("generated", id);
+
   if (fs.existsSync(projectPath)) {
     fs.rmSync(projectPath, {recursive: true, force: true});
   }
 
-  // Delete from DB
   await project.deleteOne();
+
+  /* Create Notification */
+  const notification = await Notification.create({
+    user: req.user._id,
+    message: `Project "${project.projectName}" deleted`,
+    read: false,
+  });
+
+  const io = req.app.get("io");
+  if (io) {
+    io.to(notification.user.toString()).emit("newNotification", notification);
+  }
+
   res.status(200).json({message: "Project deleted successfully"});
 });
