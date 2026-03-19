@@ -21,22 +21,26 @@ const fieldSchema = new mongoose.Schema({
   // ✅ For enum on String
   enum: {
     type: [mongoose.Schema.Types.Mixed],
+    default: undefined,
   },
 
   // ✅ For ObjectId reference
   ref: {
     type: String,
+    default: undefined,
   },
 
   // ✅ NEW: for Array type (what it contains)
   itemsType: {
     type: String,
     enum: ["String", "Number", "Boolean", "Date", "ObjectId"],
+    default: undefined,
   },
 
   // default value
   default: {
     type: mongoose.Schema.Types.Mixed,
+    default: undefined,
   },
 });
 
@@ -52,7 +56,10 @@ const collectionSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-
+    protect: {
+      type: Boolean,
+      default: false,
+    },
     isGenerated: {
       type: Boolean,
       default: false,

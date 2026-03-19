@@ -10,7 +10,8 @@ import {
 export const createCollectionService = async (
   projectId,
   collectionName,
-  fields,
+  filterField,
+  protect,
 ) => {
   if (!mongoose.Types.ObjectId.isValid(projectId)) {
     throw new Error("Invalid projectId");
@@ -23,7 +24,7 @@ export const createCollectionService = async (
     throw new Error("Collection already exists in this project");
   }
 
-  const sanitizedFields = sanitizeFields(fields);
+  const sanitizedFields = sanitizeFields(filterField);
 
   const collection = await Collection.create({
     projectId,
@@ -31,6 +32,7 @@ export const createCollectionService = async (
     fields: sanitizedFields,
     isGenerated: false,
     lastGeneratedAt: null,
+    protect,
   });
 
   await Project.findByIdAndUpdate(projectId, {
@@ -66,7 +68,8 @@ export const updateCollectionService = async (
   projectId,
   collId,
   collectionName,
-  fields,
+  filterField,
+  protect,
 ) => {
   if (!mongoose.Types.ObjectId.isValid(projectId)) {
     throw new Error("Invalid projectId");
@@ -91,27 +94,24 @@ export const updateCollectionService = async (
     }
   }
 
-  const sanitizedFields = sanitizeFields(fields);
-
+  const sanitizedFields = sanitizeFields(filterField);
   // 🔥 If renamed → delete old files first
   if (currentCollection.collectionName !== collectionName) {
     deleteCollectionFiles(projectId, currentCollection.collectionName);
   }
-
   // Update DB
   const updatedCollection = await Collection.findOneAndUpdate(
     {_id: collId, projectId},
     {
       $set: {
         collectionName,
+        protect,
         fields: sanitizedFields,
         isGenerated: false,
       },
     },
     {new: true},
   );
-
-  return updatedCollection;
 
   return updatedCollection;
 };
@@ -152,6 +152,7 @@ export const generateFilesService = async (projectId, collId, userId) => {
     projectId,
     collection.collectionName,
     collection.fields,
+    collection.protect,
   );
 
   collection.isGenerated = true;
@@ -186,6 +187,7 @@ export const generateAllCollectionsService = async (projectId, userId) => {
       projectId,
       collection.collectionName,
       collection.fields,
+      collection.protect,
     );
 
     collection.isGenerated = true;

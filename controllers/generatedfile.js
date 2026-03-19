@@ -1,6 +1,38 @@
 import fs from "fs";
 import path from "path";
+import archiver from "archiver";
+import {asyncHandler} from "../middleware/asyncHandler.js";
 // I have implemented recursive directory traversal in Node.js using fs and path.
+
+export const downloadProjectZip = asyncHandler(async (req, res) => {
+  const {projectId} = req.params;
+
+  const projectPath = path.join("generated", projectId);
+
+  if (!fs.existsSync(projectPath)) {
+    return res.status(404).json({message: "Project folder not found"});
+  }
+
+  res.setHeader(
+    "Content-Disposition",
+    `attachement; filename=${projectId}.zip`,
+  );
+
+  res.setHeader("Content-Type", "application/zip");
+
+  const archive = archiver("zip", {
+    zlib: {level: 9},
+  });
+
+  archive.on("error", (err) => {
+    throw err;
+  });
+
+  archive.pipe(res);
+
+  archive.directory(projectPath, false);
+  await archive.finalize();
+});
 
 function readAllFiles(dirPath, allFiles = []) {
   const items = fs.readdirSync(dirPath);

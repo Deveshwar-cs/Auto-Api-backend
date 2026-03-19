@@ -14,7 +14,11 @@ export const generatePackageJsonCode = () => {
     "dotenv": "^16.4.0",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.0.0"
+    "cors": "^2.8.6",
+    "mongoose": "^8.0.0",
+    "morgan": "^1.10.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "nodemon": "^3.0.0"

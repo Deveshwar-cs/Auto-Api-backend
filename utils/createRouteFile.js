@@ -2,8 +2,13 @@ import fs from "fs";
 import path from "path";
 import {generateRouteCode} from "./generateRouteCode.js";
 
-export const createRouteFile = (projectPath, collectionName) => {
-  const code = generateRouteCode(collectionName);
+export const createRouteFile = (
+  projectPath,
+  collectionName,
+  fields,
+  protect,
+) => {
+  const code = generateRouteCode(collectionName, fields, protect);
 
   const routePath = path.join(
     projectPath,

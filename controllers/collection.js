@@ -9,6 +9,7 @@ import {
   generateFilesService,
   generateAllCollectionsService,
 } from "../services/collection.service.js";
+import {filterFields} from "../utils/filterFields.js";
 
 export const generateFiles = asyncHandler(async (req, res) => {
   const {projectId, collId} = req.params;
@@ -30,14 +31,14 @@ export const generateFiles = asyncHandler(async (req, res) => {
 
 export const createCollection = asyncHandler(async (req, res) => {
   const {projectId} = req.params;
-  const {collectionName, fields} = req.body;
-
+  const {collectionName, fields, protect} = req.body;
+  const filterField = filterFields(fields);
   const collection = await createCollectionService(
     projectId,
     collectionName,
-    fields,
+    filterField,
+    protect,
   );
-
   const notification = await Notification.create({
     user: req.user._id,
     message: `Collection "${collection.collectionName}" created`,
@@ -78,13 +79,15 @@ export const deleteCollection = asyncHandler(async (req, res) => {
 
 export const updateCollection = asyncHandler(async (req, res) => {
   const {projectId, collId} = req.params;
-  const {collectionName, fields} = req.body;
+  const {collectionName, fields, protect} = req.body;
+  const filterField = filterFields(fields);
 
   const updatedCollection = await updateCollectionService(
     projectId,
     collId,
     collectionName,
-    fields,
+    filterField,
+    protect,
   );
   const collection = await Collection.findById(collId);
 

@@ -16,6 +16,8 @@ import {createPackageJsonFile} from "../utils/createPackageJsonFile.js";
 import {createDbFile} from "../utils/createDbFile.js";
 import {createErrorMiddlewareFile} from "../utils/createErrorMiddleware.js";
 import {deleteAuthFiles} from "../utils/deleteAuthFiles.js";
+import {createAsyncMiddlewareFile} from "../utils/createAsyncMiddleware.js";
+import {createSwaggerFile} from "../utils/createSwaggerFile.js";
 
 /* =========================
    CREATE PROJECT
@@ -54,7 +56,9 @@ export const createProject = asyncHandler(async (req, res) => {
   createAppFile(projectPath, project);
   createServerFile(projectPath);
   createDbFile(projectPath);
+  createSwaggerFile(projectPath);
   createErrorMiddlewareFile(projectPath);
+  createAsyncMiddlewareFile(projectPath);
 
   if (enableAuth) {
     createUserModelFile(projectPath);
@@ -121,7 +125,9 @@ export const updateProject = asyncHandler(async (req, res) => {
   createAppFile(projectPath, updatedProject);
   createServerFile(projectPath);
   createDbFile(projectPath);
+  createSwaggerFile(projectPath);
   createErrorMiddlewareFile(projectPath);
+  createAsyncMiddlewareFile(projectPath);
 
   if (!oldProject.enableAuth && updatedProject.enableAuth) {
     createUserModelFile(projectPath);

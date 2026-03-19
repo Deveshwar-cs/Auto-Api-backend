@@ -4,12 +4,17 @@ import {createSchemaFile} from "../utils/createSchemaFile.js";
 import {createControllerFile} from "../utils/createControllerFile.js";
 import {createRouteFile} from "../utils/createRouteFile.js";
 
-export const generateCollectionFiles = (projectId, collectionName, fields) => {
+export const generateCollectionFiles = (
+  projectId,
+  collectionName,
+  fields,
+  protect,
+) => {
   const projectPath = path.join("generated", projectId.toString());
 
   createSchemaFile(projectPath, collectionName, fields);
   createControllerFile(projectPath, collectionName);
-  createRouteFile(projectPath, collectionName);
+  createRouteFile(projectPath, collectionName, fields, protect);
 };
 
 export const deleteCollectionFiles = (projectId, collectionName) => {
