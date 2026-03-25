@@ -13,6 +13,7 @@ import {filterFields} from "../utils/filterFields.js";
 
 export const generateFiles = asyncHandler(async (req, res) => {
   const {projectId, collId} = req.params;
+
   const collection = await Collection.findById(collId);
   if (!collection) {
     return res.status(404).json({message: "Collection not Found!"});
@@ -23,6 +24,20 @@ export const generateFiles = asyncHandler(async (req, res) => {
   collection.isGenerated = true;
   collection.lastGeneratedAt = new Date();
   await collection.save();
+
+  /* Notification */
+  const notification = await Notification.create({
+    user: req.user._id,
+    message: `Files generated for collection "${collection.collectionName}"`,
+    type: "COLLECTION_GENERATED", // ✅ added
+    read: false,
+  });
+
+  const io = req.app.get("io");
+  if (io) {
+    io.to(notification.user.toString()).emit("newNotification", notification);
+  }
+
   res.status(200).json({
     success: true,
     message: "Files generated successfully",
@@ -32,16 +47,21 @@ export const generateFiles = asyncHandler(async (req, res) => {
 export const createCollection = asyncHandler(async (req, res) => {
   const {projectId} = req.params;
   const {collectionName, fields, protect} = req.body;
+
   const filterField = filterFields(fields);
+
   const collection = await createCollectionService(
     projectId,
     collectionName,
     filterField,
     protect,
   );
+
+  /* Notification */
   const notification = await Notification.create({
     user: req.user._id,
     message: `Collection "${collection.collectionName}" created`,
+    type: "COLLECTION_CREATED", // ✅ added
     read: false,
   });
 
@@ -60,17 +80,22 @@ export const deleteCollection = asyncHandler(async (req, res) => {
   const {projectId, collId} = req.params;
 
   const currentCollection = await Collection.findById(collId);
+
   await deleteCollectionService(projectId, collId, req.user._id);
 
+  /* Notification */
   const notification = await Notification.create({
     user: req.user._id,
     message: `Collection "${currentCollection.collectionName}" deleted`,
+    type: "COLLECTION_DELETED", // ✅ added
     read: false,
   });
+
   const io = req.app.get("io");
   if (io) {
     io.to(notification.user.toString()).emit("newNotification", notification);
   }
+
   res.status(200).json({
     success: true,
     message: "Collection deleted successfully",
@@ -80,6 +105,7 @@ export const deleteCollection = asyncHandler(async (req, res) => {
 export const updateCollection = asyncHandler(async (req, res) => {
   const {projectId, collId} = req.params;
   const {collectionName, fields, protect} = req.body;
+
   const filterField = filterFields(fields);
 
   const updatedCollection = await updateCollectionService(
@@ -89,16 +115,20 @@ export const updateCollection = asyncHandler(async (req, res) => {
     filterField,
     protect,
   );
+
   const collection = await Collection.findById(collId);
 
   updatedCollection.isGenerated = false;
   await updatedCollection.save();
 
+  /* Notification */
   const notification = await Notification.create({
     user: req.user._id,
     message: `Collection "${collection.collectionName}" updated`,
+    type: "COLLECTION_UPDATED", // ✅ added
     read: false,
   });
+
   const io = req.app.get("io");
   if (io) {
     io.to(notification.user.toString()).emit("newNotification", notification);
@@ -125,6 +155,19 @@ export const generateAllCollections = asyncHandler(async (req, res) => {
   const {projectId} = req.params;
 
   await generateAllCollectionsService(projectId, req.user.id);
+
+  /* Optional Notification (recommended 🔥) */
+  const notification = await Notification.create({
+    user: req.user._id,
+    message: `All collections generated successfully`,
+    type: "COLLECTION_ALL_GENERATED", // ✅ added
+    read: false,
+  });
+
+  const io = req.app.get("io");
+  if (io) {
+    io.to(notification.user.toString()).emit("newNotification", notification);
+  }
 
   res.json({
     success: true,

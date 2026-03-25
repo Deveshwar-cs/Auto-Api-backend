@@ -1,24 +1,24 @@
 
 import express from "express";
-
+import { protect as authMiddleware } from "../middleware/authMiddleware.js";
 
 import {
-  createtest2222,
-  getAlltest2222s,
-  gettest2222ById,
-  updatetest2222,
-  deletetest2222
-} from "../controllers/test2222.controller.js";
+  createproduct,
+  getAllproducts,
+  getproductById,
+  updateproduct,
+  deleteproduct
+} from "../controllers/product.controller.js";
 
 const router = express.Router();
 
 
 /**
  * @swagger
- * /api/test2222:
+ * /api/product:
  *   post:
- *     summary: Create test2222
- *     tags: [test2222]
+ *     summary: Create product
+ *     tags: [product]
  *     requestBody:
  *       required: true
  *       content:
@@ -35,49 +35,49 @@ const router = express.Router();
  *                  type: number
  *     responses:
  *       201:
- *         description: test2222 created successfully
+ *         description: product created successfully
  */
 
 /**
  * @swagger
- * /api/test2222:
+ * /api/product:
  *   get:
- *     summary: Get all test2222
- *     tags: [test2222]
+ *     summary: Get all product
+ *     tags: [product]
  *     responses:
  *       200:
- *         description: List of test2222
+ *         description: List of product
  */
 
 /**
  * @swagger
- * /api/test2222/{id}:
+ * /api/product/{id}:
  *   get:
- *     summary: Get test2222 by ID
- *     tags: [test2222]
+ *     summary: Get product by ID
+ *     tags: [product]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         description: test2222 ID
+ *         description: product ID
  *         schema:
  *           type: string
  *     responses:
  *       200:
- *         description: test2222 found
+ *         description: product found
  */
 
 /**
  * @swagger
- * /api/test2222/{id}:
+ * /api/product/{id}:
  *   put:
- *     summary: Update test2222
- *     tags: [test2222]
+ *     summary: Update product
+ *     tags: [product]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         description: test2222 ID
+ *         description: product ID
  *         schema:
  *           type: string
  *     requestBody:
@@ -96,35 +96,35 @@ const router = express.Router();
  *                  type: number
  *     responses:
  *       200:
- *         description: test2222 updated successfully
+ *         description: product updated successfully
  */
 
 /**
  * @swagger
- * /api/test2222/{id}:
+ * /api/product/{id}:
  *   delete:
- *     summary: Delete test2222
- *     tags: [test2222]
+ *     summary: Delete product
+ *     tags: [product]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         description: test2222 ID
+ *         description: product ID
  *         schema:
  *           type: string
  *     responses:
  *       200:
- *         description: test2222 deleted successfully
+ *         description: product deleted successfully
  */
 
 
 /* Routes */
 
-router.post("/", createtest2222);
-router.get("/", getAlltest2222s);
-router.get("/:id", gettest2222ById);
-router.put("/:id", updatetest2222);
-router.delete("/:id", deletetest2222);
+router.post("/", authMiddleware, createproduct);
+router.get("/", authMiddleware, getAllproducts);
+router.get("/:id", authMiddleware, getproductById);
+router.put("/:id", authMiddleware, updateproduct);
+router.delete("/:id", authMiddleware, deleteproduct);
 
 
 export default router;

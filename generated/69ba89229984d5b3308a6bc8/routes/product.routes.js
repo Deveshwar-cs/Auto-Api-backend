@@ -1,5 +1,7 @@
 
 import express from "express";
+import { protect as authMiddleware } from "../middleware/authMiddleware.js";
+
 import {
   createproduct,
   getAllproducts,
@@ -9,6 +11,7 @@ import {
 } from "../controllers/product.controller.js";
 
 const router = express.Router();
+
 
 /**
  * @swagger
@@ -115,10 +118,13 @@ const router = express.Router();
  */
 
 
-router.post("/", createproduct);
-router.get("/", getAllproducts);
-router.get("/:id", getproductById);
-router.put("/:id", updateproduct);
-router.delete("/:id", deleteproduct);
+/* Routes */
+
+router.post("/", authMiddleware, createproduct);
+router.get("/", authMiddleware, getAllproducts);
+router.get("/:id", authMiddleware, getproductById);
+router.put("/:id", authMiddleware, updateproduct);
+router.delete("/:id", authMiddleware, deleteproduct);
+
 
 export default router;

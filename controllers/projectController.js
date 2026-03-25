@@ -74,6 +74,7 @@ export const createProject = asyncHandler(async (req, res) => {
   const notification = await Notification.create({
     user: req.user._id,
     message: `Project "${project.projectName}" created`,
+    type: "PROJECT_CREATED", // ✅ added
     read: false,
   });
 
@@ -143,8 +144,10 @@ export const updateProject = asyncHandler(async (req, res) => {
   const notification = await Notification.create({
     user: req.user._id,
     message: `Project "${updatedProject.projectName}" updated`,
+    type: "PROJECT_UPDATED", // ✅ added
     read: false,
   });
+
   const io = req.app.get("io");
   if (io) {
     io.to(notification.user.toString()).emit("newNotification", notification);
@@ -185,6 +188,7 @@ export const deleteProject = asyncHandler(async (req, res) => {
   const notification = await Notification.create({
     user: req.user._id,
     message: `Project "${project.projectName}" deleted`,
+    type: "PROJECT_DELETED", // ✅ added
     read: false,
   });
 

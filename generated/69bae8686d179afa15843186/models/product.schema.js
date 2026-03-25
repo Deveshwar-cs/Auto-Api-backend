@@ -1,7 +1,7 @@
 
 import mongoose from "mongoose";
 
-const test2222Schema = new mongoose.Schema(
+const productSchema = new mongoose.Schema(
 {
   
  name: {
@@ -19,4 +19,4 @@ const test2222Schema = new mongoose.Schema(
 { timestamps: true }
 );
 
-export default mongoose.model("test2222", test2222Schema);
+export default mongoose.model("product", productSchema);
