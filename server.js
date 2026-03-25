@@ -28,7 +28,7 @@ const io = new Server(server, {
   cors: {
     origin: "http://localhost:5173",
     methods: ["GET", "POST", "PUT"],
-    origin: "https://auto-api-frontend-git-main-logic-lords.vercel.app/",
+    origin: "https://auto-api-frontend-git-main-logic-lords.vercel.app",
     methods: ["GET", "POST", "PUT"],
   },
 });
