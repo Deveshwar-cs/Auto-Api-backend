@@ -37,7 +37,7 @@ export const generateSwaggerCode = () => {
         },
 
         // 👇 This tells Swagger where to find your route files
-        apis: ["./routes/*.js"],
+        apis: ["./src/routes/*.js"],
         };
 
         export const swaggerSpec = swaggerJSDoc(options);

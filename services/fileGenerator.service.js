@@ -1,34 +1,26 @@
-import path from "path";
-import fs from "fs";
-import {createSchemaFile} from "../utils/createSchemaFile.js";
-import {createControllerFile} from "../utils/createControllerFile.js";
-import {createRouteFile} from "../utils/createRouteFile.js";
+import {generateSchemaCode} from "../utils/generateSchema.js";
+import {generateControllerCode} from "../utils/generateControllerCode.js";
+import {generateRouteCode} from "../utils/generateRouteCode.js";
 
-export const generateCollectionFiles = (
-  projectId,
-  collectionName,
-  fields,
-  protect,
-) => {
-  const projectPath = path.join("generated", projectId.toString());
-
-  createSchemaFile(projectPath, collectionName, fields);
-  createControllerFile(projectPath, collectionName);
-  createRouteFile(projectPath, collectionName, fields, protect);
-};
-
-export const deleteCollectionFiles = (projectId, collectionName) => {
-  const projectPath = path.join("generated", projectId.toString());
-
-  const files = [
-    path.join(projectPath, "models", `${collectionName}.schema.js`),
-    path.join(projectPath, "controllers", `${collectionName}.controller.js`),
-    path.join(projectPath, "routes", `${collectionName}.routes.js`),
-  ];
-
-  files.forEach((file) => {
-    if (fs.existsSync(file)) {
-      fs.unlinkSync(file);
-    }
+export const generateCollectionFiles = (name, fields, protect) => {
+  const files = [];
+  files.push({
+    name: `${name}.model.js`,
+    path: `src/models/${name}.model.js`,
+    content: generateSchemaCode(name, fields),
   });
+
+  files.push({
+    name: `${name}.controller.js`,
+    path: `src/controllers/${name}.controller.js`,
+    content: generateControllerCode(name),
+  });
+
+  files.push({
+    name: `${name}.routes.js`,
+    path: `src/routes/${name}.routes.js`,
+    content: generateRouteCode(name, fields, protect),
+  });
+
+  return files;
 };

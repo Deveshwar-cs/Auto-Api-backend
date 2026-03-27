@@ -1,12 +1,11 @@
-import fs from "fs";
-import path from "path";
 import {generateAuthRoutesCode} from "./generateAuthRoutesCode.js";
 
-export const createAuthRoutesFile = (projectPath) => {
+export const createAuthRoutesFile = (files) => {
   const code = generateAuthRoutesCode();
 
-  const filePath = path.join(projectPath, "routes", "auth.routes.js");
-
-  fs.mkdirSync(path.dirname(filePath), {recursive: true});
-  fs.writeFileSync(filePath, code);
+  files.push({
+    name: "auth.routes.js",
+    path: "src/routes/auth.routes.js",
+    content: code,
+  });
 };

@@ -1,14 +1,15 @@
 import {asyncHandler} from "../middleware/asyncHandler.js";
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
-import fs from "fs";
-import path from "path";
+import cloudinary from "../config/cloudinary.js";
 
+// ================= GET PROFILE =================
 export const getProfile = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user.id).select("-password");
   res.json(user);
 });
 
+// ================= UPDATE PROFILE =================
 export const updateProfile = asyncHandler(async (req, res) => {
   const {name, bio} = req.body;
 
@@ -18,24 +19,23 @@ export const updateProfile = asyncHandler(async (req, res) => {
     return res.status(404).json({message: "User not found"});
   }
 
-  // If new photo uploaded
+  // 🔥 If new image uploaded
   if (req.file) {
-    // Delete old photo
+    // 🔥 Delete old image from Cloudinary
     if (user.profilePhoto) {
-      const oldImagePath = path.join("uploads", user.profilePhoto);
+      const publicId = user.profilePhoto.split("/").pop().split(".")[0];
 
       try {
-        await fs.promises.unlink(oldImagePath);
-      } catch (error) {
-        console.log("Old image not found or already deleted");
+        await cloudinary.uploader.destroy(`autoapi_uploads/${publicId}`);
+      } catch (err) {
+        console.log("Cloudinary delete failed:", err.message);
       }
     }
 
-    // Save new filename
-    user.profilePhoto = req.file.filename;
+    // 🔥 Save Cloudinary URL
+    user.profilePhoto = req.file.path;
   }
 
-  // Update other fields
   user.name = name || user.name;
   user.bio = bio || user.bio;
 
@@ -44,12 +44,16 @@ export const updateProfile = asyncHandler(async (req, res) => {
   res.json(updatedUser);
 });
 
+// ================= UPDATE THEME =================
 export const updateTheme = asyncHandler(async (req, res) => {
   const {theme} = req.body;
+
   const user = await User.findByIdAndUpdate(req.user.id, {theme}, {new: true});
+
   res.json({theme: user.theme});
 });
 
+// ================= CHANGE PASSWORD =================
 export const changePassword = asyncHandler(async (req, res) => {
   const {currentPassword, newPassword} = req.body;
 

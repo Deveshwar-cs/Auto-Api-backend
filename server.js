@@ -1,6 +1,7 @@
+import "./config/env.js";
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
+
 import mongoose from "mongoose";
 import http from "http";
 import {Server} from "socket.io";
@@ -16,8 +17,6 @@ import dashboardRoutes from "./routes/dashboard.routes.js";
 import settingRoutes from "./routes/settingRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 
-dotenv.config();
-
 const app = express();
 
 /* Create HTTP server for socket */
@@ -26,9 +25,10 @@ const server = http.createServer(app);
 /* Socket.io setup */
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST", "PUT"],
-    origin: "https://auto-api-frontend-git-main-logic-lords.vercel.app",
+    origin: [
+      "http://localhost:5173",
+      "https://auto-api-frontend-git-main-logic-lords.vercel.app",
+    ],
     methods: ["GET", "POST", "PUT"],
   },
 });

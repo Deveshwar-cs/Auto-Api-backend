@@ -6,7 +6,7 @@ import {
 
 const router = express.Router();
 
-router.get("/:projectId", getGeneratedFiles);
 router.get("/download/:projectId", downloadProjectZip);
+router.get("/:projectId", getGeneratedFiles);
 
 export default router;

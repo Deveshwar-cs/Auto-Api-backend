@@ -2,7 +2,7 @@ export const generateControllerCode = (collectionName) => {
   return `
     import mongoose from "mongoose";
     import { asyncHandler } from "../middleware/asyncHandler.js";
-    import ${collectionName} from "../models/${collectionName}.schema.js";
+    import ${collectionName} from "../models/${collectionName}.model.js";
 
     export const create${collectionName} = asyncHandler(async (req, res) => {
     const data = await ${collectionName}.create(req.body);

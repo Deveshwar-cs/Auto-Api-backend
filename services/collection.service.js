@@ -2,10 +2,8 @@ import Collection from "../models/Collection.js";
 import Project from "../models/Project.js";
 import mongoose from "mongoose";
 import {sanitizeFields} from "../utils/sanitizeFields.js";
-import {
-  generateCollectionFiles,
-  deleteCollectionFiles,
-} from "./fileGenerator.service.js";
+import {generateCollectionFiles} from "./fileGenerator.service.js";
+import GeneratedFile from "../models/GeneratedFile.js";
 
 export const createCollectionService = async (
   projectId,
@@ -148,16 +146,31 @@ export const generateFilesService = async (projectId, collId, userId) => {
     throw new Error("Not authorized");
   }
 
-  generateCollectionFiles(
-    projectId,
-    collection.collectionName,
-    collection.fields,
-    collection.protect,
-  );
+  const generated = await GeneratedFile.findOne({projectId});
 
+  if (!generated) {
+    throw new Error("Base project files not found");
+  }
+
+  let files = generated.files;
+
+  const {collectionName, fields, protect} = collection;
+
+  // ✅ Remove old files of this collection
+  files = files.filter((file) => !file.path.includes(`/${collectionName}`));
+
+  // ✅ Generate new files
+  const newFiles = generateCollectionFiles(collectionName, fields, protect);
+
+  // ✅ Save updated files
+  generated.files = [...files, ...newFiles];
+  await generated.save();
+
+  // ✅ Update collection status
   collection.isGenerated = true;
   collection.lastGeneratedAt = new Date();
   await collection.save();
+
   return true;
 };
 
@@ -182,18 +195,36 @@ export const generateAllCollectionsService = async (projectId, userId) => {
     throw new Error("No collections found for this project");
   }
 
-  for (const collection of collections) {
-    generateCollectionFiles(
-      projectId,
-      collection.collectionName,
-      collection.fields,
-      collection.protect,
-    );
+  const generated = await GeneratedFile.findOne({projectId});
 
+  if (!generated) {
+    throw new Error("Base project files not found");
+  }
+
+  let files = generated.files;
+
+  // 🔥 Loop through all collections
+  for (const collection of collections) {
+    const {collectionName, fields, protect} = collection;
+
+    // ✅ Remove old files of this collection
+    files = files.filter((file) => !file.path.includes(`/${collectionName}`));
+
+    // ✅ Generate new files
+    const newFiles = generateCollectionFiles(collectionName, fields, protect);
+
+    // ✅ Merge
+    files = [...files, ...newFiles];
+
+    // ✅ Update collection
     collection.isGenerated = true;
     collection.lastGeneratedAt = new Date();
     await collection.save();
   }
+
+  // ✅ Save final result
+  generated.files = files;
+  await generated.save();
 
   return true;
 };

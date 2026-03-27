@@ -1,11 +1,9 @@
-import fs from "fs";
-import path from "path";
 import {generateAppCode} from "./generateAppCode.js";
-
-export const createAppFile = (projectPath, project) => {
+export const createAppFile = (files, project) => {
   const code = generateAppCode(project);
-  const appPath = path.join(projectPath, "app.js");
-
-  fs.mkdirSync(path.dirname(appPath), {recursive: true});
-  fs.writeFileSync(appPath, code);
+  files.push({
+    name: "app.js",
+    path: "src/app.js",
+    content: code,
+  });
 };

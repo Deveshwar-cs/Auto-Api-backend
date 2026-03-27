@@ -1,12 +1,11 @@
-import fs from "fs";
-import path from "path";
 import {generateDbCode} from "./generateDbCode.js";
 
-export const createDbFile = (projectPath) => {
+export const createDbFile = (files) => {
   const code = generateDbCode();
 
-  const dbPath = path.join(projectPath, "config", "db.js");
-
-  fs.mkdirSync(path.dirname(dbPath), {recursive: true});
-  fs.writeFileSync(dbPath, code);
+  files.push({
+    name: "db.js",
+    path: "src/config/db.js",
+    content: code,
+  });
 };

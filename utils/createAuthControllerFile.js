@@ -1,12 +1,11 @@
-import fs from "fs";
-import path from "path";
 import {generateAuthControllerCode} from "./generateAuthControllerCode.js";
 
-export const createAuthControllerFile = (projectPath) => {
+export const createAuthControllerFile = (files) => {
   const code = generateAuthControllerCode();
 
-  const filePath = path.join(projectPath, "controllers", "auth.controller.js");
-
-  fs.mkdirSync(path.dirname(filePath), {recursive: true});
-  fs.writeFileSync(filePath, code);
+  files.push({
+    name: "auth.controller.js",
+    path: "src/controllers/auth.controller.js",
+    content: code,
+  });
 };
