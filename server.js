@@ -37,7 +37,12 @@ const io = new Server(server, {
 app.set("io", io);
 
 /* Middleware */
-app.use(cors());
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+  }),
+);
 app.use(express.json());
 app.use("/uploads", express.static("uploads"));
 
