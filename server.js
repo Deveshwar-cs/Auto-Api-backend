@@ -39,7 +39,10 @@ app.set("io", io);
 /* Middleware */
 app.use(
   cors({
-    origin: true,
+    origin: [
+      "http://localhost:5173",
+      "https://auto-api-frontend-git-main-logic-lords.vercel.app",
+    ],
     credentials: true,
   }),
 );
